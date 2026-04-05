@@ -9,8 +9,16 @@ pkg_check_modules(WaylandClient REQUIRED IMPORTED_TARGET wayland-client)
 
 if (NOT DEFINED SYSTEMD_USER_UNIT_DIR)
     find_package(PkgConfig REQUIRED)
-    pkg_check_modules(Systemd REQUIRED systemd)
-    pkg_get_variable(SYSTEMD_USER_UNIT_DIR systemd systemduserunitdir)
+    pkg_check_modules(Systemd QUIET libsystemd)
+    if (Systemd_FOUND)
+        pkg_get_variable(SYSTEMD_USER_UNIT_DIR systemd systemduserunitdir)
+        if (NOT SYSTEMD_USER_UNIT_DIR)
+            set(SYSTEMD_USER_UNIT_DIR "${CMAKE_INSTALL_PREFIX}/lib/systemd/user")
+        endif()
+    else()
+        pkg_check_modules(Systemd REQUIRED systemd)
+        pkg_get_variable(SYSTEMD_USER_UNIT_DIR systemd systemduserunitdir)
+    endif()
 endif()
 
 add_executable(dde-shell
